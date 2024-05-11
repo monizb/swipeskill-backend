@@ -9,6 +9,13 @@ const spawn = require("child_process").spawn;
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const genAI = new GoogleGenerativeAI("AIzaSyCb4tdP2_JmjmM7g_iYoHuiPnFV3LKEazA");
 const model = genAI.getGenerativeModel({ model: "gemini-pro"});
+var busboy = require('connect-busboy'); //middleware for form/file upload
+var path = require('path');     //used for file path
+var fs = require('fs-extra');       //File System - for file manipulation
+var express = require('express');  
+
+router.use(busboy());
+router.use(express.static(path.join(__dirname, 'public')));
 
 
 router.post("/testlogin", (req, res) => {
@@ -43,6 +50,7 @@ router.post("/profile", async (req, res) => {
 });
 
 router.post("/register", async (req, res) => {
+    console.log(res.locals.user)
   const user = await new User({
     name: req.body.name,
     email: res.locals.user.email,
@@ -65,15 +73,18 @@ router.post("/process-resume", async (req, res) => {
     }
   const ls = spawn("./myvirtenv/bin/python3", [
     "./ai/process-resume.py",
-    ["What are the top skills of the candidate in comma spearated values"],
+    [`What are the top skills of the candidate in comma spearated values-${res.locals.user.uid}`],
   ]);
+  ls.stderr.on('data', (data) => {
+    console.log(`stderr: ${data}`);
+  });
   ls.stdout.on("data", (data) => {
     const cleanedInput = data.toString().replace(/\s*\[.*?\]\s*/g, "");
     skillsArray = cleanedInput.split(",").map((skill) => skill.trim());
     const ls2 = spawn("./myvirtenv/bin/python3", [
       "./ai/process-resume.py",
       [
-        "Write a one liner about the candidate and experience if any without directly mentioning the skill or the company with years of experience if any",
+        `Write a one liner about the candidate and experience if any without directly mentioning the skill or the company with years of experience if any-${res.locals.user.uid}`
       ],
     ]);
 
@@ -104,6 +115,23 @@ router.post("/generate-jd", async (req, res) => {
     const project = await new Project(req.body).save();
     res.send({ project });
   });
+
+  router.post('/upload-resume', async (req, res) => {
+
+        var fstream;
+        req.pipe(req.busboy);
+        req.busboy.on('file', function (fieldname, file, filename) {
+            console.log("Uploading: " + filename);
+
+            //Path where image will be uploaded
+            fstream = fs.createWriteStream(__dirname + '/cvs/' + `${res.locals.user.uid}.pdf`);
+            file.pipe(fstream);
+            fstream.on('close', function () {    
+                console.log("Upload Finished of " + filename);              
+                res.redirect('back');           //where to go next
+            });
+        });
+    });
 
   
 module.exports = router;

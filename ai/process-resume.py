@@ -16,8 +16,7 @@ os.environ['GOOGLE_API_KEY']="AIzaSyCb4tdP2_JmjmM7g_iYoHuiPnFV3LKEazA"
 
 llm = ChatGoogleGenerativeAI(model="gemini-pro")
 embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
-
-loader = PyPDFLoader("cvs/mb.pdf")
+loader = PyPDFLoader("cvs/" + sys.argv[1].split('-')[1] + ".pdf")
 
 pages = loader.load()
 
@@ -56,10 +55,10 @@ qa_chain = RetrievalQA.from_chain_type(
 #     job_requirements="Candidates must have UI UX experience"
 # )
 
-response = qa_chain.invoke({"query": sys.argv[1]})
+response = qa_chain.invoke({"query": sys.argv[1].split('-')[0]})
 
 
-print(response['result'])
+print(response['result'], flush=True)
 
 # response = qa_chain.invoke({"query": "What is the place and language of the candidate"})
 
