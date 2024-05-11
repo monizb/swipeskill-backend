@@ -1,10 +1,15 @@
 const router = require("express").Router();
 const User = require("./models/User");
 const Profile = require("./models/Profile");
+const Project = require("./models/Project");
 const authenticationMiddleware = require("./middleware");
 const firebaseMiddleware = require("express-firebase-middleware");
 const axios = require("axios");
 const spawn = require("child_process").spawn;
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+const genAI = new GoogleGenerativeAI("AIzaSyCb4tdP2_JmjmM7g_iYoHuiPnFV3LKEazA");
+const model = genAI.getGenerativeModel({ model: "gemini-pro"});
+
 
 router.post("/testlogin", (req, res) => {
   //gets you an auth token for testing
@@ -85,4 +90,20 @@ router.post("/process-resume", async (req, res) => {
   });
 });
 
+router.post("/generate-jd", async (req, res) => {
+    const prompt = `You are a professional Project Description writer, given the project title: ${req.body.title}, write a project description for the project. Write as a freelancing expert with skills good to haves.Dont return anything other than the main JD body, dont send back the title, dont write about the application process anywhere`
+
+  const result = await model.generateContent(prompt);
+  const response = await result.response;
+  const text = response.text();
+  
+    res.send({ jd:  text.replace(/[*:#]/g, '').replace(/\s{2,}/g, ' ') });
+  });
+
+  router.post("/project", async (req, res) => {
+    const project = await new Project(req.body).save();
+    res.send({ project });
+  });
+
+  
 module.exports = router;
