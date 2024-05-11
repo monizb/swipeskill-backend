@@ -33,6 +33,9 @@ const profileSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    rawResume: {
+        type: Object
+    },
 }, { timestamps: true });
 
 
