@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema({
     role: {
         type: String,
         required: true,
-        enum: ['freelancer', 'client']
+        enum: ['freelancer', 'recruiter']
     },
     uid: {
         type: String,

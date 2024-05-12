@@ -23,7 +23,28 @@ const projectSchema = new mongoose.Schema({
     owner: {
       type: String,
       required: true
-    }
+    },
+    budget: {
+      type: Number,
+      required: true
+    },
+    status: {
+      type: String,
+      enum: ["open", "closed", "in-progress"],
+      default: "open",
+    },
+    assignedTo: {
+      type: String,
+      default: null,
+    },
+    activity: {
+      type: Array,
+      default: [],
+    },
+    shortListed: {
+      type: Array,
+      default: [],
+    },
   });
 
 
