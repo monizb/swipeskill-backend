@@ -142,10 +142,10 @@ router.post("/project", async (req, res) => {
 
     const projNew = await Project.updateOne(
             { _id: project._id },
-            { assignedTo: matchedUser.uid }
+            { shortListed: matchedUsers }
             );
-            
-    res.send({ matchedUsers, user, projNew, project });
+
+    res.send({ matchedUsers, projNew, project });
 
     // if more then one matched user, return the first one
     // if (matchedUsers.length > 0) {
